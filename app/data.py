@@ -1,11 +1,16 @@
 import jsonwebtoken as jwt
 import json
 import httpx
-from time import time
+from time import time, sleep
 from hashlib import sha256
 from base64 import b64encode
-from prettytable import PrettyTable
-from typing import List
+from rich import box
+from rich.table import Table
+from rich.console import Console
+from rich.progress import track, Progress
+
+
+console = Console()
 
 
 class Data():
@@ -46,7 +51,7 @@ class Data():
         token = jwt.encode(payload, self.__api_key, algorithm=algorithm)
         return token
 
-    def fetch_data(self) -> List:
+    def fetch_data(self):
         jwt_token = self.__create_jwt_token()
         headers = {"Authorization": f"Bearer {jwt_token}"}
         client = httpx.Client(headers=headers, verify=False)
@@ -57,21 +62,69 @@ class Data():
     def get_all_data(self):
         res = self.fetch_data()
         if isinstance(res, list):
-            table = PrettyTable(
-                ['Index', 'Entity ID', 'Host Name', 'IP Address',
-                 'Registration Time', 'Status'])
+            table = Table(title="All Data", show_header=True,
+                          header_style="bold white", box=box.ROUNDED)
+            table_heading = [
+                {
+                    'header': "ID",
+                    'max_width': 2,
+                    'style': '#878787',
+                },
+                {
+                    'header': 'Entity ID',
+                    'max_width': 50,
+                },
+                {
+                    'header': 'Host',
+                    'max_width': 20
+                },
+                {
+                    'header': 'IP Address',
+                    'max_width': 20,
+                    'style': '#3d8eff'
+                },
+                {
+                    'header': 'Registration Time',
+                    'max_width': 20
+                },
+                {
+                    'header': 'Status',
+                    'max_width': 12
+                }
+            ]
+            for heading in table_heading:
+                table.add_column(**heading)
+
             index = 0
             for data in res:
                 index += 1
+                id = str(index)
                 entity_id = data['entity_id']
                 host = data['host_name']
                 ip = data['ip_address_list']
                 registration_time = data['last_registration_time']
-                status = data['connection_status']
-                table.add_row([index, entity_id,
-                               host, ip, registration_time, status.upper()])
-            tbl = table.get_string(title="All Data")
-            print(tbl)
+                status = '[green]ONLINE[/green]' if data['connection_status'] == 'Online' else '[red]OFFLINE[/red]'
+                table.add_row(id, entity_id, host, ip,
+                              registration_time, status)
+
+            hosts = []
+            for data in res:
+                hosts.append(data['host_name'])
+
+            with Progress(console=console, transient=True) as progress:
+                tasks = []
+                for host in hosts:
+                    task = progress.add_task(
+                        f"[red]Fetching {host}...", total=100)
+                    tasks.append(task)
+
+                while not progress.finished:
+                    for task in tasks:
+                        progress.update(task, advance=0.5)
+                    sleep(0.02)
+
+            console.print(table)
+
         else:
             print("""     ____        _          _   _       _     _____                     _ 
     |  _ \  __ _| |_ __ _  | \ | | ___ | |_  |  ___|__  _   _ _ __   __| |
@@ -97,19 +150,24 @@ class Data():
             )
 
             if data_found is not None:
-                table = PrettyTable(["Type", "Result"])
+                table = Table(
+                    title=data_found['host_name'], header_style="bold white", box=box.ROUNDED)
+                table.add_column("Type", max_width=30)
+                table.add_column("Value", max_width=50)
+                for i in track(range(100), description=f"[red]Fetching {host}..."):
+                    sleep(0.02)
+
                 for key, value in data_found.items():
                     if key == 'ip_address_list':
-                        table.add_row(['IP Address', value])
+                        table.add_row('IP Address', value)
                     elif key == 'connection_status':
-                        table.add_row(['Connection Status', value])
+                        table.add_row('Connection Status', value)
                     elif key == 'entity_id':
-                        table.add_row(['Entity ID', value])
+                        table.add_row('Entity ID', value)
                     elif key == 'last_registration_time':
-                        table.add_row(['Last Registration Time', value])
+                        table.add_row('Last Registration Time', value)
 
-                tbl = table.get_string(title=data_found['host_name'])
-                print(tbl)
+                console.print(table)
             else:
                 print("""     ____        _          _   _       _     _____                     _ 
     |  _ \  __ _| |_ __ _  | \ | | ___ | |_  |  ___|__  _   _ _ __   __| |

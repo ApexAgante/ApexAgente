@@ -1,5 +1,5 @@
 from prompt_toolkit.completion import Completer, Completion
-from data import Data
+from .data import Data
 
 data = Data({
     "headers": "",
