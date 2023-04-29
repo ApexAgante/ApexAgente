@@ -1,0 +1,6 @@
+{
+    "base_url": "https://ohbypl.manage.trendmicro.com/",
+    "application_id": "3A8C6F1D-5D9A-4157-A933-BF3554464F8C",
+    "api_key": "E2758DF0-1F8E-41B7-8579-17D46D21E18C",
+    "product_agent_api_path": "/WebApp/API/AgentResource/ProductAgents"
+}
