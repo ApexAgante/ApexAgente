@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "apexagente-cli"
+version = "0.1.0"
+description = ""
+authors = ["jo-project"]
+readme = "README.md"
+packages = [{ include = "apexagente_cli" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+jsonwebtoken = "^1.0.0"
+colorama = "^0.4.6"
+prompt-toolkit = "^3.0.38"
+httpx = "^0.24.0"
+prettytable = "^3.7.0"
+rich = "^13.3.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
