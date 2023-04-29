@@ -83,12 +83,12 @@ To start the application you can run this command
 
 - For poetry
 ```bash
-poetry run python3 -B app/main.py
+poetry run app
 ```
 
 - For non poetry
 ```bash
-python3 -B app/main.py
+python3 -m app/main.py
 ```
 
 </details>
