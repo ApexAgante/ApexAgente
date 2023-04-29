@@ -33,7 +33,7 @@ Apex Agente is easy to use and comes with a simple and intuitive user interface.
 Import from github (which branch)
 
 ```bash
-  git clone -b <cli|gui> https://github.com/ApexAgante/ApexAgenteSimple
+  git clone -b <cli|gui> https://github.com/ApexAgante/ApexAgente
 ```
 
 ## Run Locally
