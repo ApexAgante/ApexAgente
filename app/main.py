@@ -1,24 +1,44 @@
 from prompt_toolkit.shortcuts import set_title, clear
 import colorama
+import click
+from os import path, remove
 from colorama import Fore, Style as ColorStyle
 from prompt_toolkit import PromptSession
+from rich.tree import Tree
+from rich.console import Console
 
-from .data import Data
-from .completer import TerminalCompleter
-from .commands import Commands
-from .prompt import Prompt
+from .classes import TerminalCompleter, Commands, Prompt
+from .functions import write_config, create_data, get_data
 
+# Init colorama
+colorama.init()
+
+console = Console()
 app = Commands(name="Commands")
 prompt = Prompt()
-colorama.init()
 session = PromptSession()
 
-data = Data({
-    'headers': '',
-    'query': '?hostname',
-    'body': '',
-    'http_method': 'GET'
-})
+
+@click.command()
+@click.option('--api', '-api', default=None, help="Your API key")
+@click.option('--id', '-id', default=None, help="Your application ID")
+@click.option('--url', '-url', default=None, help="Server URL")
+@click.option('--n', is_flag=True, help="Use default Configuration")
+def main(api, id, url, n):
+    if path.isfile('config.json'):
+        remove('config.json')
+
+    if not n:
+        if api is None:
+            api = click.prompt("API Key")
+        if id is None:
+            id = click.prompt("Application ID")
+        if url is None:
+            url = click.prompt("Server URL")
+        write_config(api, id, url)
+
+    create_data()
+    run()
 
 
 @app.command(name="clear", help="Clear console")
@@ -28,25 +48,29 @@ def clear_command():
 
 @app.command(name="all", help="Get all data")
 def all_command():
-    global data
+    data = get_data()
     data.get_all_data()
 
 
 @app.command(name="get", help="Get a data from host name")
 def get_command(host):
-    global data
+    data = get_data()
     data.get_data_by_host(host)
+
+
+@app.command(name="quit", help="Quit from app")
+def quit_command():
+    raise KeyboardInterrupt
 
 
 @app.command(name="help", help="Display all available commands")
 def help_command():
-    print(Fore.GREEN + "Available commands")
+    tree = Tree(":open_file_folder: Available commands",
+                guide_style="bold bright_blue")
     for command, help in app.registered_help.items():
-        print(f" - {command}: {help}")
+        tree.add(f"{command}").add(help)
+    console.print(tree)
     print(ColorStyle.RESET_ALL)
-
-
-prompt.get_prompt()
 
 
 def run():
@@ -76,9 +100,9 @@ def run():
             except (KeyError, ValueError):
                 error_msg = "Invalid command. Type 'help' for a list of available commands."
                 print(f"{Fore.RED}{error_msg}{Fore.RESET}")
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         print(f"{Fore.RED} ❯")
 
 
 if __name__ == "__main__":
-    run()
+    main()

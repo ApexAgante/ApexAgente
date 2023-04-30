@@ -8,23 +8,25 @@ from rich import box
 from rich.table import Table
 from rich.console import Console
 from rich.progress import track, Progress
-
+from os import path
 
 console = Console()
 
 
 class Data():
     def __init__(self, parameter: object):
-        config = open('config.json')
+        file_path = ('config.json' if path.isfile('config.json')
+                     else 'default_config.json')
+        config = open(file_path)
         data = json.load(config)
         self.__base_url = data['base_url']
         self.__app_id = data['application_id']
         self.__api_key = data['api_key']
         self.__product_agent_api_path = data['product_agent_api_path']
-        self.headers = parameter['headers'] if 'headers' in parameter else ''
-        self.query = parameter['query'] if 'query' in parameter else ''
-        self.body = parameter['body'] if 'body' in parameter else ''
-        self.http_method = parameter['http_method'] if 'http_method' in parameter else ''
+        self.headers = parameter.get('headers', '')
+        self.query = parameter.get('query', '')
+        self.body = parameter.get('body', '')
+        self.http_method = parameter.get('http_method', 'GET')
 
     @property
     def raw_url(self):
@@ -103,7 +105,8 @@ class Data():
                 host = data['host_name']
                 ip = data['ip_address_list']
                 registration_time = data['last_registration_time']
-                status = '[green]ONLINE[/green]' if data['connection_status'] == 'Online' else '[red]OFFLINE[/red]'
+                status = ('[green]ONLINE[/green]' if data['connection_status']
+                          == 'Online' else '[red]OFFLINE[/red]')
                 table.add_row(id, entity_id, host, ip,
                               registration_time, status)
 
@@ -151,10 +154,12 @@ class Data():
 
             if data_found is not None:
                 table = Table(
-                    title=data_found['host_name'], header_style="bold white", box=box.ROUNDED)
+                    title=data_found['host_name'], header_style="bold white",
+                    box=box.ROUNDED)
                 table.add_column("Type", max_width=30)
                 table.add_column("Value", max_width=50)
-                for i in track(range(100), description=f"[red]Fetching {host}..."):
+                for i in track(range(100),
+                               description=f"[red]Fetching {host}"):
                     sleep(0.02)
 
                 for key, value in data_found.items():

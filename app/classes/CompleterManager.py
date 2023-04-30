@@ -1,18 +1,12 @@
 from prompt_toolkit.completion import Completer, Completion
-from .data import Data
-
-data = Data({
-    "headers": "",
-    "query": "?hostname",
-    "body": "",
-    "http_method": "GET"
-})
+from ..functions import get_data
 
 
 class TerminalCompleter(Completer):
 
     def __init__(self):
-        self.commands = ['help', 'clear', 'all', 'get']
+        self.commands = ['help', 'clear', 'all', 'get', 'quit']
+        data = get_data()
         self.host_names = data.get_all_host()
 
     def get_completions(self, document, complete_event):

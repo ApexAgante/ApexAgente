@@ -23,7 +23,7 @@ class Prompt:
                 "cursor": "ansibrightred blink",
             }
         )
-        self.prompt = None
+        self.prompt = self.get_prompt()
 
     def get_prompt(self) -> HTML:
         """
@@ -57,6 +57,6 @@ class Prompt:
         padding_size = total_width - used_width
 
         padding = HTML("<padding>%s</padding>") % (" " * padding_size,)
-        self.prompt = merge_formatted_text(
+        return merge_formatted_text(
             [left_part, padding, right_part, "\n", "╰─ "]
         )
