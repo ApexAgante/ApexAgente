@@ -84,5 +84,8 @@ markdown_extensions:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
 
+extra_css:
+  - stylesheets/extra.css
+
 copyright: |
   &copy; 2023 <a href="https://github.com/ApexAgante"  target="_blank" rel="noopener">Apex Agante</a>
