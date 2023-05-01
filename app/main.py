@@ -26,7 +26,7 @@ keys = KeyBindings()
 @click.option('--api', '-api', default=None, help="Your API key")
 @click.option('--id', '-id', default=None, help="Your application ID")
 @click.option('--url', '-url', default=None, help="Server URL")
-@click.option('--n', is_flag=True, help="Use default Configuration")
+@click.option('--n', '-n', is_flag=True, help="Use default Configuration")
 def main(api, id, url, n):
     check_config()
     if not n:
@@ -74,6 +74,7 @@ def help_command():
     print(ColorStyle.RESET_ALL)
 
 
+# Adding keybinding to make CTRL + Z = CTRL + C
 @keys.add(Keys.ControlZ)
 def _(event):
     raise KeyboardInterrupt
