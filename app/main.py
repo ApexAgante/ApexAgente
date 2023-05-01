@@ -103,7 +103,7 @@ def run_cli():
                             parameter = command_input_split[1:]
                             app.registered_commands[name](*parameter)
                         else:
-                            raise ArgumentsError(name, parameter_need)
+                            raise ArgumentsError(name, parameter_need, length - 1)
                     else:
                         raise CommandNotFound
                 else:
@@ -112,7 +112,7 @@ def run_cli():
                 error_msg = "Invalid command. Type 'help' for a list of available commands"
                 print(f"{Fore.RED}{error_msg}{Fore.RESET}")
             except ArgumentsError as a:
-                error_msg = f"Invalid parameters. You need {a.argument_total} parameter(s) for {a.command}"
+                error_msg = f"Invalid parameters. {a.command} need {a.argument_need} parameter(s) for and found {a.argument}"
                 print(f"{Fore.RED}{error_msg}{Fore.RESET}")
     except (KeyboardInterrupt, EOFError):
         check_config()
