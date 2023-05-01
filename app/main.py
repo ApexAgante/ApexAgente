@@ -1,22 +1,26 @@
-from prompt_toolkit.shortcuts import set_title, clear
-import colorama
 import click
+
 from os import path, remove
-from colorama import Fore, Style as ColorStyle
+from colorama import Fore, Style as ColorStyle, init
 from prompt_toolkit import PromptSession
+from prompt_toolkit.shortcuts import set_title, clear
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.keys import Keys
 from rich.tree import Tree
 from rich.console import Console
 
-from .classes import TerminalCompleter, Commands, Prompt
+from .classes import (TerminalCompleter, Commands, Prompt,
+                      ArgumentsError, CommandNotFound)
 from .functions import write_config, create_data, get_data
 
 # Init colorama
-colorama.init()
+init()
 
 console = Console()
 app = Commands(name="Commands")
 prompt = Prompt()
 session = PromptSession()
+keys = KeyBindings()
 
 
 @click.command()
@@ -38,7 +42,7 @@ def main(api, id, url, n):
         write_config(api, id, url)
 
     create_data()
-    run()
+    run_cli()
 
 
 @app.command(name="clear", help="Clear console")
@@ -53,7 +57,7 @@ def all_command():
 
 
 @app.command(name="get", help="Get a data from host name")
-def get_command(host):
+def get_command(host=None):
     data = get_data()
     data.get_data_by_host(host)
 
@@ -73,35 +77,48 @@ def help_command():
     print(ColorStyle.RESET_ALL)
 
 
-def run():
+@keys.add(Keys.ControlZ)
+def _(event):
+    raise KeyboardInterrupt
+
+
+def run_cli():
     try:
         clear()
-        set_title("Simple-ApexAgente")
+        set_title("Apex Agente")
         while True:
-            # Prompt user for command input using prompt-toolkit
             command_input = session.prompt(prompt.prompt, style=prompt.style,
                                            refresh_interval=1,
                                            completer=TerminalCompleter(),
                                            complete_while_typing=True,
-                                           complete_in_thread=True)
-            # Look up and execute the corresponding command function
+                                           complete_in_thread=True,
+                                           key_bindings=keys)
+
             command_input_split = command_input.split()
             try:
-                if command_input_split[0] in app.registered_commands:
-                    if len(command_input_split) == 1:
-                        app.registered_commands[command_input_split[0]]()
-                    elif len(command_input_split) == 2 and command_input_split[0] == 'get':
-                        app.registered_commands[command_input_split[0]](
-                            command_input_split[1])
+                name = command_input_split[0]
+                length = len(command_input_split)
+                if name in app.registered_commands:
+                    parameter_need = (app.registered_command_parameters[name])
+                    if length > 0:
+                        if length == parameter_need + 1:
+                            parameter = command_input_split[1:]
+                            app.registered_commands[name](*parameter)
+                        else:
+                            raise ArgumentsError(name, parameter_need)
                     else:
-                        raise ValueError
+                        raise CommandNotFound
                 else:
-                    raise KeyError
-            except (KeyError, ValueError):
-                error_msg = "Invalid command. Type 'help' for a list of available commands."
+                    raise CommandNotFound
+            except CommandNotFound:
+                error_msg = "Invalid command. Type 'help' for a list of available commands"
+                print(f"{Fore.RED}{error_msg}{Fore.RESET}")
+            except ArgumentsError as a:
+                error_msg = f"Invalid parameters. You need {a.argument_total} parameter(s) for {a.command}"
                 print(f"{Fore.RED}{error_msg}{Fore.RESET}")
     except (KeyboardInterrupt, EOFError):
         print(f"{Fore.RED} ❯")
+        raise SystemExit
 
 
 if __name__ == "__main__":
