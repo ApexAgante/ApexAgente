@@ -1,6 +1,5 @@
 import click
 
-from os import path, remove
 from colorama import Fore, Style as ColorStyle, init
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import set_title, clear
@@ -11,7 +10,7 @@ from rich.console import Console
 
 from .classes import (TerminalCompleter, Commands, Prompt,
                       ArgumentsError, CommandNotFound)
-from .functions import write_config, create_data, get_data
+from .functions import write_config, create_data, get_data, check_config
 
 # Init colorama
 init()
@@ -29,9 +28,7 @@ keys = KeyBindings()
 @click.option('--url', '-url', default=None, help="Server URL")
 @click.option('--n', is_flag=True, help="Use default Configuration")
 def main(api, id, url, n):
-    if path.isfile('config.json'):
-        remove('config.json')
-
+    check_config()
     if not n:
         if api is None:
             api = click.prompt("API Key")
@@ -117,6 +114,7 @@ def run_cli():
                 error_msg = f"Invalid parameters. You need {a.argument_total} parameter(s) for {a.command}"
                 print(f"{Fore.RED}{error_msg}{Fore.RESET}")
     except (KeyboardInterrupt, EOFError):
+        check_config()
         print(f"{Fore.RED} ❯")
         raise SystemExit
 
