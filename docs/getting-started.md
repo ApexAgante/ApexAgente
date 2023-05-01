@@ -178,7 +178,7 @@ To run it locally is pretty simple, just run it with:
 === "python"
 
     ``` bash
-    python3 -m app/main.py [--api API KEY] [--id APPLICATION ID] [--url SERVER URL] [--n DEFAULT CONFIGURATION]
+    python -m app.main [--api API KEY] [--id APPLICATION ID] [--url SERVER URL] [--n DEFAULT CONFIGURATION]
     ```
 
 ??? info "Information"
