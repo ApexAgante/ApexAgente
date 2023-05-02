@@ -10,6 +10,8 @@ from rich.console import Console
 from rich.progress import track, Progress
 from os import path
 
+from ..functions.File import write_pdf, write_excel
+
 console = Console()
 
 
@@ -98,6 +100,19 @@ class Data():
                 table.add_column(**heading)
 
             index = 0
+            data_table = [
+                ["ID", "Entity ID", "Host", "IP Address", "Registration Time", "Status"]
+            ]
+
+            data_excel = {
+                "ID": [],
+                "Entity ID": [],
+                "Host": [],
+                "IP Address": [],
+                "Registration Time": [],
+                "Status": []
+            }
+
             for data in res:
                 index += 1
                 id = str(index)
@@ -107,6 +122,17 @@ class Data():
                 registration_time = data['last_registration_time']
                 status = ('[green]ONLINE[/green]' if data['connection_status']
                           == 'Online' else '[red]OFFLINE[/red]')
+                data_table.append([id, 
+                                   entity_id,
+                                   host, ip,
+                                   registration_time,
+                                   data['connection_status'].upper()])
+                data_excel["ID"].append(id)
+                data_excel["Entity ID"].append(entity_id)
+                data_excel["Host"].append(host)
+                data_excel["IP Address"].append(ip)
+                data_excel['Registration Time'].append(registration_time)
+                data_excel["Status"].append(data['connection_status'].upper())
                 table.add_row(id, entity_id, host, ip,
                               registration_time, status)
 
@@ -128,6 +154,8 @@ class Data():
 
             console.print(table)
 
+            write_pdf(data_table)
+            write_excel(data_excel)
         else:
             print("""     ____        _          _   _       _     _____                     _ 
     |  _ \  __ _| |_ __ _  | \ | | ___ | |_  |  ___|__  _   _ _ __   __| |
