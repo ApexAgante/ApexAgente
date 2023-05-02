@@ -50,13 +50,15 @@ def clear_command():
 @app.command(name="all", help="Get all data")
 def all_command():
     data = get_data()
-    data.get_all_data()
+    if data is not None:
+        data.get_all_data()
 
 
 @app.command(name="get", help="Get a data from host name")
 def get_command(host=None):
     data = get_data()
-    data.get_data_by_host(host)
+    if data is not None:
+        data.get_data_by_host(host)
 
 
 @app.command(name="quit", help="Quit from app")
@@ -69,7 +71,8 @@ def help_command():
     tree = Tree(":open_file_folder: Available commands",
                 guide_style="bold bright_blue")
     for command, help in app.registered_help.items():
-        tree.add(f"{command}").add(help)
+        if help is not None:
+            tree.add(f"{command}").add(help)
     console.print(tree)
     print(ColorStyle.RESET_ALL)
 
